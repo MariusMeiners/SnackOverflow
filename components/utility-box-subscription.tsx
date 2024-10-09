@@ -1,11 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Facebook, Instagram, Twitter, Package, Leaf, DollarSign, Users } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
@@ -17,12 +18,17 @@ type Category = {
   image: string
 }
 
+type PricingTier = {
+  name: string
+  pricePerEmployee: number
+  description: string
+}
+
 export function UtilityBoxSubscriptionComponent() {
-  const [showProductSelection, setShowProductSelection] = useState(false)
   const [selectedCategories, setSelectedCategories] = useState<number[]>([])
-  const [showCheckout, setShowCheckout] = useState(false)
-  const [animateFeatures, setAnimateFeatures] = useState(false)
-  const [animateProducts, setAnimateProducts] = useState(false)
+  const [activeTab, setActiveTab] = useState("features")
+  const [employeeCount, setEmployeeCount] = useState<number>(1)
+  const [selectedTier, setSelectedTier] = useState<PricingTier | null>(null)
 
   const toggleCategorySelection = (categoryId: number) => {
     setSelectedCategories((prev) =>
@@ -37,14 +43,16 @@ export function UtilityBoxSubscriptionComponent() {
     { id: 4, name: "Cleaning", description: "Eco-friendly cleaning supplies", image: "/placeholder.svg?height=100&width=100" },
   ]
 
-  useEffect(() => {
-    if (showProductSelection) {
-      setAnimateFeatures(true)
-      setTimeout(() => {
-        setAnimateProducts(true)
-      }, 300)
-    }
-  }, [showProductSelection])
+  const pricingTiers: PricingTier[] = [
+    { name: "Basic", pricePerEmployee: 5, description: "Essential items for everyday use" },
+    { name: "Standard", pricePerEmployee: 10, description: "A balanced mix of products" },
+    { name: "Premium", pricePerEmployee: 15, description: "Our most comprehensive package" },
+  ]
+
+  const calculateTotal = () => {
+    if (!selectedTier) return 0
+    return selectedTier.pricePerEmployee * employeeCount
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -58,83 +66,130 @@ export function UtilityBoxSubscriptionComponent() {
             <Link className="transition-colors hover:text-foreground/80 text-foreground/60" href="#features">
               Features
             </Link>
-            <Link className="transition-colors hover:text-foreground/80 text-foreground/60" href="#product-selection">
+            <Link className="transition-colors hover:text-foreground/80 text-foreground/60" href="#pricing">
+              Pricing
+            </Link>
+            <Link className="transition-colors hover:text-foreground/80 text-foreground/60" href="#categories">
               Categories
             </Link>
             <Link className="transition-colors hover:text-foreground/80 text-foreground/60" href="#sustainability">
               Sustainability
             </Link>
-            <Link className="transition-colors hover:text-foreground/80 text-foreground/60" href="#pricing">
-              Pricing
-            </Link>
           </nav>
         </div>
       </header>
       <main className="flex-1">
-        <section id="features" className={`w-full py-12 md:py-24 lg:py-32 xl:py-48 transition-all duration-300 ${animateFeatures ? 'opacity-0 -translate-x-full' : 'opacity-100'}`}>
-          <div className="container px-4 md:px-6">
-            <div className="flex flex-col items-center space-y-4 text-center">
-              <div className="space-y-2">
-                <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl/none">
-                  Essential Utilities, Delivered Monthly
-                </h1>
-                <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl dark:text-gray-400">
-                  Simplify your life with our curated box of snacks, cleaning supplies, and beverages delivered right to your door.
-                </p>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full h-[calc(100vh-3.5rem)]">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="features">Features</TabsTrigger>
+            <TabsTrigger value="pricing">Pricing</TabsTrigger>
+            <TabsTrigger value="categories">Categories</TabsTrigger>
+            <TabsTrigger value="checkout">Checkout</TabsTrigger>
+          </TabsList>
+          <TabsContent value="features" className="h-[calc(100%-2.5rem)] overflow-auto">
+            <div className="flex flex-col items-center justify-center space-y-4 text-center h-full max-w-3xl mx-auto px-4">
+              <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl/none">
+                Essential Utilities, Delivered Monthly
+              </h1>
+              <p className="text-gray-500 md:text-xl dark:text-gray-400">
+                Simplify your life with our curated box of snacks, cleaning supplies, and beverages delivered right to your door.
+              </p>
+              <Button onClick={() => setActiveTab("pricing")} size="lg">
+                Get Started
+              </Button>
+            </div>
+          </TabsContent>
+          <TabsContent value="pricing" className="h-[calc(100%-2.5rem)] overflow-auto">
+            <div className="space-y-8 p-4">
+              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl text-center">Choose Your Plan</h2>
+              <div className="max-w-md mx-auto">
+                <Label htmlFor="employeeCount">Number of Employees</Label>
+                <Input
+                  id="employeeCount"
+                  type="number"
+                  min="1"
+                  value={employeeCount}
+                  onChange={(e) => setEmployeeCount(Math.max(1, parseInt(e.target.value) || 1))}
+                  className="mt-1"
+                />
               </div>
-              <div className="space-x-4">
-                <Button onClick={() => setShowProductSelection(true)} size="lg">
-                  Get Started
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {pricingTiers.map((tier) => (
+                  <Card key={tier.name} className={`flex flex-col ${selectedTier?.name === tier.name ? 'border-primary' : ''}`}>
+                    <CardHeader>
+                      <CardTitle>{tier.name}</CardTitle>
+                      <CardDescription>{tier.description}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex-grow">
+                      <p className="text-4xl font-bold">
+                        €{tier.pricePerEmployee}
+                        <span className="text-sm font-normal">/employee/week</span>
+                      </p>
+                    </CardContent>
+                    <CardFooter className="mt-auto">
+                      <Button className="w-full" onClick={() => setSelectedTier(tier)}>
+                        {selectedTier?.name === tier.name ? 'Selected' : 'Choose Plan'}
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+              {selectedTier && (
+                <div className="text-center text-2xl font-bold">
+                  Total: €{calculateTotal()} per week
+                </div>
+              )}
+              <div className="flex justify-center">
+                <Button onClick={() => setActiveTab("categories")} size="lg" disabled={!selectedTier}>
+                  Next: Choose Categories
                 </Button>
               </div>
             </div>
-          </div>
-        </section>
-        <section id="product-selection" className={`w-full py-12 md:py-24 lg:py-32 transition-all duration-300 ${animateProducts ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full'}`}>
-          <div className="container px-4 md:px-6">
-            <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-8">Select Your Categories</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-              {categories.map((category) => (
-                <Card 
-                  key={category.id} 
-                  className={`${selectedCategories.includes(category.id) ? 'border-primary' : ''} cursor-pointer transition-all hover:shadow-lg`}
-                  onClick={() => toggleCategorySelection(category.id)}
-                >
-                  <CardHeader>
-                    <Image
-                      src={category.image}
-                      alt={category.name}
-                      width={100}
-                      height={100}
-                      className="mx-auto"
-                    />
-                  </CardHeader>
-                  <CardContent>
-                    <CardTitle>{category.name}</CardTitle>
-                    <CardDescription>{category.description}</CardDescription>
-                  </CardContent>
-                  <CardFooter>
-                    <Checkbox
-                      checked={selectedCategories.includes(category.id)}
-                      onCheckedChange={() => toggleCategorySelection(category.id)}
-                    />
-                  </CardFooter>
-                </Card>
-              ))}
+          </TabsContent>
+          <TabsContent value="categories" className="h-[calc(100%-2.5rem)] overflow-auto">
+            <div className="space-y-8 p-4">
+              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl text-center">Select Your Categories</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                {categories.map((category) => (
+                  <Card 
+                    key={category.id} 
+                    className={`${selectedCategories.includes(category.id) ? 'border-primary' : ''} cursor-pointer transition-all hover:shadow-lg`}
+                    onClick={() => toggleCategorySelection(category.id)}
+                  >
+                    <CardHeader>
+                      <Image
+                        src={category.image}
+                        alt={category.name}
+                        width={100}
+                        height={100}
+                        className="mx-auto"
+                      />
+                    </CardHeader>
+                    <CardContent>
+                      <CardTitle>{category.name}</CardTitle>
+                      <CardDescription>{category.description}</CardDescription>
+                    </CardContent>
+                    <CardFooter>
+                      <Checkbox
+                        checked={selectedCategories.includes(category.id)}
+                        onCheckedChange={() => toggleCategorySelection(category.id)}
+                      />
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+              <div className="flex justify-between items-center">
+                <p className="text-lg font-semibold">Selected Categories: {selectedCategories.length}</p>
+                <Button onClick={() => setActiveTab("checkout")} size="lg" disabled={selectedCategories.length === 0}>
+                  Next: Checkout
+                </Button>
+              </div>
             </div>
-            <div className="mt-8 flex justify-between items-center">
-              <p className="text-lg font-semibold">Selected Categories: {selectedCategories.length}</p>
-              <Button onClick={() => setShowCheckout(true)} size="lg" disabled={selectedCategories.length === 0}>
-                Next
-              </Button>
-            </div>
-          </div>
-        </section>
-        {showCheckout && (
-          <section id="checkout" className="w-full py-12 md:py-24 lg:py-32">
-            <div className="container px-4 md:px-6">
-              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-8">Checkout</h2>
-              <div className="max-w-md mx-auto">
+          </TabsContent>
+          <TabsContent value="checkout" className="h-[calc(100%-2.5rem)] overflow-auto">
+            <div className="flex items-center justify-center h-full">
+              <div className="max-w-md w-full px-4">
+                <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-8 text-center">Checkout</h2>
                 <form className="space-y-4">
                   <div>
                     <Label htmlFor="name">Full Name</Label>
@@ -148,17 +203,20 @@ export function UtilityBoxSubscriptionComponent() {
                     <Label htmlFor="address">Shipping Address</Label>
                     <Input id="address" placeholder="123 Main St, City, Country" required />
                   </div>
+                  <div className="text-lg font-semibold">
+                    Total: €{calculateTotal()} per week
+                  </div>
                   <Button type="submit" className="w-full">
                     Complete Order
                   </Button>
                 </form>
               </div>
             </div>
-          </section>
-        )}
+          </TabsContent>
+        </Tabs>
         <section id="sustainability" className="w-full py-12 md:py-24 lg:py-32 bg-gray-100 dark:bg-gray-800">
-          <div className="container px-4 md:px-6">
-            <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-8">Our Sustainability Efforts</h2>
+          <div className="container mx-auto px-4 md:px-6">
+            <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-8 text-center">Our Sustainability Efforts</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <Card>
                 <CardHeader>
@@ -190,45 +248,9 @@ export function UtilityBoxSubscriptionComponent() {
             </div>
           </div>
         </section>
-        <section id="pricing" className="w-full py-12 md:py-24 lg:py-32">
-          <div className="container px-4 md:px-6">
-            <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-8">Pricing</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {["Basic", "Standard", "Premium"].map((tier) => (
-                <Card key={tier} className="flex flex-col">
-                  <CardHeader>
-                    <CardTitle>{tier}</CardTitle>
-                    <CardDescription>
-                      {tier === "Basic"
-                        ? "Essential items for everyday use"
-                        : tier === "Standard"
-                        ? "A balanced mix of products"
-                        : "Our most comprehensive package"}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex-grow">
-                    <p className="text-4xl font-bold">
-                      ${tier === "Basic" ? "29" : tier === "Standard" ? "49" : "79"}
-                      <span className="text-sm font-normal">/month</span>
-                    </p>
-                    <ul className="mt-4 space-y-2">
-                      <li>✓ {tier === "Basic" ? "5" : tier === "Standard" ? "10" : "15"} Items per month</li>
-                      <li>✓ Free Shipping</li>
-                      {tier !== "Basic" && <li>✓ Customization Options</li>}
-                      {tier === "Premium" && <li>✓ Priority Support</li>}
-                    </ul>
-                  </CardContent>
-                  <CardFooter className="mt-auto">
-                    <Button className="w-full">Choose {tier}</Button>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
       </main>
       <footer className="w-full py-6 bg-gray-800 text-white">
-        <div className="container px-4 md:px-6">
+        <div className="container mx-auto px-4 md:px-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
               <h3 className="text-lg font-semibold mb-2">UtilityBox</h3>
