@@ -52,7 +52,7 @@ export function CraveSubscriptionComponent() {
     { id: 1, name: "Snacks", description: "Delicious and nutritious snacks", image: "/snacks.webp" },
     { id: 2, name: "Beverage", description: "Refreshing drinks", image: "/beverage.webp" },
     { id: 3, name: "Pantry", description: "Pantry...", image: "/pantry.webp" },
-    { id: 4, name: "Cleaning", description: "Nutritious and diet-friendly choices", image: "/cleaning.webp" },
+    { id: 4, name: "Cleaning", description: "Nutritious and diet-friendly choices", image: "/" },
   ]
 
   const valuePropositions: ValueProposition[] = [
@@ -146,7 +146,6 @@ export function CraveSubscriptionComponent() {
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="flex h-14 items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link className="flex items-center space-x-2" href="/">
-            <Coffee className="h-6 w-6" />
             <span className="font-bold">Crave</span>
           </Link>
           <nav className="flex items-center space-x-6 text-sm font-medium">
@@ -173,7 +172,7 @@ export function CraveSubscriptionComponent() {
             <TabsTrigger value="items">Items</TabsTrigger>
             <TabsTrigger value="checkout">Checkout</TabsTrigger>
           </TabsList>
-          <TabsContent style={{backgroundImage:""}} value="features" id="features" className="h-[calc(100%-2.5rem)] overflow-auto">
+          <TabsContent style={{backgroundImage:"url()"}} value="features" id="features" className="h-[calc(100%-2.5rem)] overflow-auto">
             <div className="flex flex-col items-center justify-center space-y-4 text-center h-full max-w-3xl mx-auto px-4">
               <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl/none">
                 Delicious Snacks, Delivered Monthly
