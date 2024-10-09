@@ -21,12 +21,6 @@ type Category = {
   image: string
 }
 
-type PricingTier = {
-  name: string
-  pricePerEmployee: number
-  description: string
-}
-
 type ValueProposition = {
   icon: React.ElementType
   title: string
@@ -45,8 +39,6 @@ type Item = {
 export function CraveSubscriptionComponent() {
   const [selectedCategories, setSelectedCategories] = useState<number[]>([])
   const [activeTab, setActiveTab] = useState("features")
-  const [employeeCount, setEmployeeCount] = useState<number>(1)
-  const [selectedTier, setSelectedTier] = useState<PricingTier | null>(null)
   const [items, setItems] = useState<Item[]>([])
   const [openCategories, setOpenCategories] = useState<string[]>([])
 
@@ -60,13 +52,7 @@ export function CraveSubscriptionComponent() {
     { id: 1, name: "Snacks", description: "Delicious and nutritious snacks", image: "/snacks.webp" },
     { id: 2, name: "Beverage", description: "Refreshing drinks", image: "/beverage.webp" },
     { id: 3, name: "Pantry", description: "Pantry...", image: "/pantry.webp" },
-    { id: 4, name: "Cleaning", description: "Nutritious and diet-friendly choices", image: "/household.jpg" },
-  ]
-
-  const pricingTiers: PricingTier[] = [
-    { name: "Basic", pricePerEmployee: 5, description: "Essential snacks and drinks" },
-    { name: "Standard", pricePerEmployee: 10, description: "A balanced mix of treats" },
-    { name: "Premium", pricePerEmployee: 15, description: "Our most comprehensive snack package" },
+    { id: 4, name: "Cleaning", description: "Nutritious and diet-friendly choices", image: "/cleaning.webp" },
   ]
 
   const valuePropositions: ValueProposition[] = [
@@ -92,24 +78,25 @@ export function CraveSubscriptionComponent() {
     }
   ]
 
-  const calculateTotal = () => {
-    if (!selectedTier) return 0
-    return selectedTier.pricePerEmployee * employeeCount
-  }
+  const calculateTotal = (items: Item[]): number => {
+    return items.reduce((total, item) => {
+      return total + item.listPrice * item.amount;
+    }, 0);
+  };
 
   useEffect(() => {
     // This would typically be an API call to fetch the items based on selected categories
     const fetchedItems: Item[] = [
-      { category: "Beverage", subcategory: "Coffee", listPrice: 15.32, unit: "1,000 Grams", amount: 1, brands: ["Starbucks", "Lavazza", "Illy", "Peet's"] },
-      { category: "Beverage", subcategory: "Tea", listPrice: 2.60, unit: "30 - 50 Sachets", amount: 1, brands: ["Twinings", "Yogi", "Harney & Sons", "Tazo"] },
-      { category: "Beverage", subcategory: "Energy Drinks", listPrice: 2.00, unit: "250 ml", amount: 1, brands: ["Red Bull", "Monster", "Rockstar", "Celsius"] },
-      { category: "Snacks", subcategory: "Chips", listPrice: 1.69, unit: "150 Grams", amount: 1, brands: ["Lay's", "Pringles", "Doritos", "Kettle"] },
-      { category: "Snacks", subcategory: "Chocolate Bars", listPrice: 1.20, unit: "50 Grams", amount: 1, brands: ["Snickers", "Twix", "KitKat", "Hershey's"] },
-      { category: "Fruits", subcategory: "Fresh Apples", listPrice: 0.50, unit: "per piece", amount: 1, brands: ["Gala", "Fuji", "Granny Smith"] },
-      { category: "Fruits", subcategory: "Dried Mango", listPrice: 3.32, unit: "100 Grams", amount: 1, brands: ["Trader Joe's", "Kirkland", "Sun-Maid"] },
-      { category: "Healthy Options", subcategory: "Protein Bars", listPrice: 2.74, unit: "60 Grams", amount: 1, brands: ["Quest", "RXBAR", "KIND", "Clif"] },
-      { category: "Healthy Options", subcategory: "Mixed Nuts", listPrice: 5.99, unit: "250 Grams", amount: 1, brands: ["Planters", "Blue Diamond", "Kirkland"] },
-      { category: "Healthy Options", subcategory: "Greek Yogurt", listPrice: 1.50, unit: "150 Grams", amount: 1, brands: ["Chobani", "Fage", "Oikos"] },
+      { category: "Beverage", subcategory: "Coffee", listPrice: 15.32, unit: "1,000 Grams", amount: 0, brands: ["Starbucks", "Lavazza", "Illy", "Peet's"] },
+      { category: "Beverage", subcategory: "Tea", listPrice: 2.60, unit: "30 - 50 Sachets", amount: 0, brands: ["Twinings", "Yogi", "Harney & Sons", "Tazo"] },
+      { category: "Beverage", subcategory: "Energy Drinks", listPrice: 2.00, unit: "250 ml", amount: 0, brands: ["Red Bull", "Monster", "Rockstar", "Celsius"] },
+      { category: "Snacks", subcategory: "Chips", listPrice: 1.69, unit: "150 Grams", amount: 0, brands: ["Lay's", "Pringles", "Doritos", "Kettle"] },
+      { category: "Snacks", subcategory: "Chocolate Bars", listPrice: 1.20, unit: "50 Grams", amount: 0, brands: ["Snickers", "Twix", "KitKat", "Hershey's"] },
+      { category: "Fruits", subcategory: "Fresh Apples", listPrice: 0.50, unit: "per piece", amount: 0, brands: ["Gala", "Fuji", "Granny Smith"] },
+      { category: "Fruits", subcategory: "Dried Mango", listPrice: 3.32, unit: "100 Grams", amount: 0, brands: ["Trader Joe's", "Kirkland", "Sun-Maid"] },
+      { category: "Healthy Options", subcategory: "Protein Bars", listPrice: 2.74, unit: "60 Grams", amount: 0, brands: ["Quest", "RXBAR", "KIND", "Clif"] },
+      { category: "Healthy Options", subcategory: "Mixed Nuts", listPrice: 5.99, unit: "250 Grams", amount: 0, brands: ["Planters", "Blue Diamond", "Kirkland"] },
+      { category: "Healthy Options", subcategory: "Greek Yogurt", listPrice: 1.50, unit: "150 Grams", amount: 0, brands: ["Chobani", "Fage", "Oikos"] },
     ]
     setItems(fetchedItems)
     setOpenCategories(Array.from(new Set(fetchedItems.map(item => item.category))))
@@ -180,14 +167,13 @@ export function CraveSubscriptionComponent() {
       </header>
       <main className="flex-1">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full h-[calc(100vh-3.5rem)]">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="features">Features</TabsTrigger>
-            <TabsTrigger value="pricing">Pricing</TabsTrigger>
             <TabsTrigger value="categories">Categories</TabsTrigger>
             <TabsTrigger value="items">Items</TabsTrigger>
             <TabsTrigger value="checkout">Checkout</TabsTrigger>
           </TabsList>
-          <TabsContent value="features" id="features" className="h-[calc(100%-2.5rem)] overflow-auto">
+          <TabsContent style={{backgroundImage:""}} value="features" id="features" className="h-[calc(100%-2.5rem)] overflow-auto">
             <div className="flex flex-col items-center justify-center space-y-4 text-center h-full max-w-3xl mx-auto px-4">
               <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl/none">
                 Delicious Snacks, Delivered Monthly
@@ -199,55 +185,8 @@ export function CraveSubscriptionComponent() {
                 <Button onClick={() => scrollToSection('how-it-works')} size="lg" variant="outline">
                   Get Informed
                 </Button>
-                <Button onClick={() => setActiveTab("pricing")} size="lg">
+                <Button onClick={() => setActiveTab("categories")} size="lg">
                   Get Started
-                </Button>
-              </div>
-            </div>
-          </TabsContent>
-          <TabsContent value="pricing" className="h-[calc(100%-2.5rem)] overflow-auto">
-            <div className="space-y-8 p-4">
-              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl text-center">Choose Your Plan</h2>
-              <div className="max-w-md mx-auto">
-                <Label htmlFor="employeeCount">Number of Employees</Label>
-                <Input
-                  id="employeeCount"
-                  type="number"
-                  min="1"
-                  value={employeeCount}
-                  onChange={(e) => setEmployeeCount(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="mt-1"
-                />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {pricingTiers.map((tier) => (
-                  <Card key={tier.name} className={`flex flex-col ${selectedTier?.name === tier.name ? 'border-primary' : ''}`}>
-                    <CardHeader>
-                      <CardTitle>{tier.name}</CardTitle>
-                      <CardDescription>{tier.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent className="flex-grow">
-                      <p className="text-4xl font-bold">
-                        €{tier.pricePerEmployee}
-                        <span className="text-sm font-normal">/employee/week</span>
-                      </p>
-                    </CardContent>
-                    <CardFooter className="mt-auto">
-                      <Button className="w-full" onClick={() => setSelectedTier(tier)}>
-                        {selectedTier?.name === tier.name ? 'Selected' : 'Choose Plan'}
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                ))}
-              </div>
-              {selectedTier && (
-                <div className="text-center text-2xl font-bold">
-                  Total: €{calculateTotal()} per week
-                </div>
-              )}
-              <div className="flex justify-center">
-                <Button onClick={() => setActiveTab("categories")} size="lg" disabled={!selectedTier}>
-                  Next: Choose Categories
                 </Button>
               </div>
             </div>
@@ -373,7 +312,7 @@ export function CraveSubscriptionComponent() {
                     <Input id="address" placeholder="123 Main St, City, Country" required />
                   </div>
                   <div className="text-lg font-semibold">
-                    Total: €{calculateTotal()} per week
+                    Total: €{calculateTotal(items).toFixed(2)} per week
                   </div>
                   <Button type="submit" className="w-full">
                     Complete Order
@@ -399,7 +338,7 @@ export function CraveSubscriptionComponent() {
                 <p className="text-lg text-gray-600 dark:text-gray-300">
                   By removing brand bias and focusing on quality, we can provide you with an exciting variety of products at unbeatable prices. It's like a surprise party for your taste buds, with the added bonus of substantial savings!
                 </p>
-                <Button size="lg" onClick={() => setActiveTab("pricing")}>Get Started</Button>
+                <Button size="lg" onClick={() => setActiveTab("categories")}>Get Started</Button>
               </div>
               <div className="w-full md:w-1/2">
                 <Image
