@@ -197,7 +197,7 @@ export function CraveSubscriptionComponent() {
             <TabsTrigger value="features">Features</TabsTrigger>
             <TabsTrigger value="categories">Categories</TabsTrigger>
             <TabsTrigger value="items">Items</TabsTrigger>
-            <TabsTrigger value="checkout">Checkout</TabsTrigger>
+            <TabsTrigger value="checkout" disabled={!total}>Checkout</TabsTrigger>
           </TabsList>
           <TabsContent style={{backgroundImage:"url()"}} value="features" id="features" className="h-[calc(100%-2.5rem)] overflow-auto">
             <div className="flex flex-col items-center justify-center space-y-4 text-center h-full max-w-3xl mx-auto px-4">
