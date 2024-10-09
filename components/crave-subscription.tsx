@@ -57,10 +57,10 @@ export function CraveSubscriptionComponent() {
   }
 
   const categories: Category[] = [
-    { id: 1, name: "Snacks", description: "Delicious and nutritious snacks", image: "/placeholder.svg?height=100&width=100" },
-    { id: 2, name: "Beverages", description: "Refreshing drinks", image: "/placeholder.svg?height=100&width=100" },
-    { id: 3, name: "Fruits", description: "Fresh and dried fruits", image: "/placeholder.svg?height=100&width=100" },
-    { id: 4, name: "Healthy Options", description: "Nutritious and diet-friendly choices", image: "/placeholder.svg?height=100&width=100" },
+    { id: 1, name: "Snacks", description: "Delicious and nutritious snacks", image: "/snacks.webp" },
+    { id: 2, name: "Beverage", description: "Refreshing drinks", image: "/beverage.webp" },
+    { id: 3, name: "Pantry", description: "Pantry...", image: "/pantry.webp" },
+    { id: 4, name: "Cleaning", description: "Nutritious and diet-friendly choices", image: "/household.jpg" },
   ]
 
   const pricingTiers: PricingTier[] = [
@@ -403,7 +403,7 @@ export function CraveSubscriptionComponent() {
               </div>
               <div className="w-full md:w-1/2">
                 <Image
-                  src=""
+                  src="/howitworks.jpg"
                   alt="How Crave Works"
                   width={600}
                   height={400}
