@@ -1,11 +1,14 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { getStripe } from '../lib/useStripe';
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Loading } from "@/components/ui/loading"
 import { Checkbox } from "@/components/ui/checkbox"
+import { DatePickerField } from "@/components/ui/date-picker-field"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
@@ -13,6 +16,7 @@ import { Facebook, Instagram, Twitter, Coffee, DollarSign, Smile, Clock, Leaf, P
 import Link from "next/link"
 import Image from "next/image"
 import ScrollingTextComponent from "./scrolling-text"
+import { Item } from "../lib/types";
 
 type Category = {
   id: number
@@ -27,20 +31,26 @@ type ValueProposition = {
   description: string
 }
 
-type Item = {
-  category: string
-  subcategory: string
-  listPrice: number
-  unit: string
-  amount: number
-  brands: string[]
-}
-
 export function CraveSubscriptionComponent() {
   const [selectedCategories, setSelectedCategories] = useState<number[]>([])
   const [activeTab, setActiveTab] = useState("features")
   const [items, setItems] = useState<Item[]>([])
   const [openCategories, setOpenCategories] = useState<string[]>([])
+
+  const [customerName, setCustomerName] = useState<string | null>(null)
+  const [customerAddress, setcustomerAddress] = useState<string | null>(null)
+  const [deliveryDate, setDeliveryDate] = useState<Date | null>(null)
+  const [customerEmail, setCustomerEmail] = useState<string | null>(null)
+  const [total, setTotal] = useState<number>(0)
+  const [loading, setLoading] = useState<boolean>(false)
+
+  const today = new Date();
+  const dayOfWeek = today.getDay();  
+  const daysUntilNextMonday = (8 - dayOfWeek) % 7 || 7;
+  const nextMonday = new Date(today);
+  nextMonday.setDate(today.getDate() + daysUntilNextMonday);
+  const nextPossibleDeliveryDate = nextMonday;
+
 
   const toggleCategorySelection = (categoryId: number) => {
     setSelectedCategories((prev) =>
@@ -78,12 +88,6 @@ export function CraveSubscriptionComponent() {
     }
   ]
 
-  const calculateTotal = (items: Item[]): number => {
-    return items.reduce((total, item) => {
-      return total + item.listPrice * item.amount;
-    }, 0);
-  };
-
   useEffect(() => {
     // This would typically be an API call to fetch the items based on selected categories
     const fetchedItems: Item[] = [
@@ -101,6 +105,17 @@ export function CraveSubscriptionComponent() {
     setItems(fetchedItems)
     setOpenCategories(Array.from(new Set(fetchedItems.map(item => item.category))))
   }, [selectedCategories])
+
+  useEffect(() => {
+    const calculateTotal = () => {
+      const total = items
+        .reduce((sum, item) => sum + item.listPrice * item.amount, 0)
+        .toFixed(2);
+      setTotal(parseFloat(total));
+    };
+
+    calculateTotal();
+  }, [items]);
 
   const toggleItemSelection = (index: number) => {
     setItems(prevItems => {
@@ -141,9 +156,46 @@ export function CraveSubscriptionComponent() {
     }
   }
 
+  const createCheckout = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+      e.preventDefault();
+      setLoading(true)
+
+      const stripe = await getStripe();
+  
+      const response = await fetch('/api/create-checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          customerName,
+          customerAddress,
+          customerEmail,
+          deliveryDate: deliveryDate?.toISOString().split('T')[0],
+          items
+        }),
+      });
+  
+      const { sessionId } = await response.json();
+
+      if (sessionId) {
+        stripe?.redirectToCheckout({ sessionId });
+      } else {
+        setLoading(false)
+        //handle error
+      }
+  }
+
+  const onDateChange = (date: Date | null) => {
+    setDeliveryDate(date)
+    console.log(date)
+    console.log(deliveryDate)
+  }
+
   return (
     <div className="flex flex-col min-h-screen">
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      {loading && <Loading />}
+      <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="flex h-14 items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link className="flex items-center space-x-2" href="/">
             <span className="font-bold">Crave</span>
@@ -170,7 +222,7 @@ export function CraveSubscriptionComponent() {
             <TabsTrigger value="features">Features</TabsTrigger>
             <TabsTrigger value="categories">Categories</TabsTrigger>
             <TabsTrigger value="items">Items</TabsTrigger>
-            <TabsTrigger value="checkout">Checkout</TabsTrigger>
+            <TabsTrigger value="checkout" disabled={!total}>Checkout</TabsTrigger>
           </TabsList>
           <TabsContent style={{backgroundImage:"url()"}} value="features" id="features" className="h-[calc(100%-2.5rem)] overflow-auto">
             <div className="flex flex-col items-center justify-center space-y-4 text-center h-full max-w-3xl mx-auto px-4">
@@ -300,20 +352,48 @@ export function CraveSubscriptionComponent() {
                 <form className="space-y-4">
                   <div>
                     <Label htmlFor="name">Full Name</Label>
-                    <Input id="name" placeholder="John Doe" required />
+                    <Input
+                      id="customerName"
+                      placeholder="John Doe"
+                      onChange={e => setCustomerName(e.target.value)}
+                      required
+                    />
                   </div>
                   <div>
                     <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" placeholder="john@example.com" required />
+                    <Input
+                      id="customerEmail"
+                      type="email"
+                      placeholder="sustainable-goods@example.com"
+                      onChange={e => setCustomerEmail(e.target.value)}
+                      required
+                    />
                   </div>
                   <div>
                     <Label htmlFor="address">Shipping Address</Label>
-                    <Input id="address" placeholder="123 Main St, City, Country" required />
+                    <Input
+                      id="customerAddress"
+                      placeholder="123 Main St, City, Country"
+                      onChange={e => setcustomerAddress(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="customerDeliveryDate" className="block text-sm font-medium text-gray-700 mb-1">
+                      Delivery Date
+                    </label>
+                    <DatePickerField
+                      id="customerDeliveryDate"
+                      onDateChange={onDateChange}
+                      selectedDate={deliveryDate || null}
+                      minDate={nextPossibleDeliveryDate}
+                      placeholder="Select Delivery date"
+                    ></DatePickerField>
                   </div>
                   <div className="text-lg font-semibold">
-                    Total: €{calculateTotal(items).toFixed(2)} per week
+                    Total: €{total} per week
                   </div>
-                  <Button type="submit" className="w-full">
+                  <Button type="submit" className="w-full" onClick={createCheckout}>
                     Complete Order
                   </Button>
                 </form>
