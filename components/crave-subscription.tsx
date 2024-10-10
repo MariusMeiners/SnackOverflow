@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Loading } from "@/components/ui/loading"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -40,6 +41,7 @@ export function CraveSubscriptionComponent() {
   const [deliveryDate, setDeliveryDate] = useState<string | null>(null)
   const [customerEmail, setCustomerEmail] = useState<string | null>(null)
   const [total, setTotal] = useState<number>(0)
+  const [loading, setLoading] = useState<boolean>(false)
 
 
   const toggleCategorySelection = (categoryId: number) => {
@@ -148,6 +150,7 @@ export function CraveSubscriptionComponent() {
 
   const createCheckout = async (e: React.FormEvent<HTMLInputElement>) => {
       e.preventDefault();
+      setLoading(true)
 
       const stripe = await getStripe();
   
@@ -165,12 +168,21 @@ export function CraveSubscriptionComponent() {
       });
   
       const { sessionId } = await response.json();
-      stripe?.redirectToCheckout({ sessionId });
+
+      if (sessionId) {
+        stripe?.redirectToCheckout({ sessionId });
+      } else {
+        setLoading(false)
+        //handle error
+      }
+
+      
   }
 
   return (
     <div className="flex flex-col min-h-screen">
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      {loading && <Loading />}
+      <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="flex h-14 items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link className="flex items-center space-x-2" href="/">
             <span className="font-bold">Crave</span>
