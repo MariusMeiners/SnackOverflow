@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { UpdateIcon } from '@radix-ui/react-icons';
 
-const Loading: React.FC<HTMLElement> = () => {
+const Loading: React.FC = () => {
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="flex space-x-4 animate-spin text-white">

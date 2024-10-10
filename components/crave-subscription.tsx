@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Loading } from "@/components/ui/loading"
 import { Checkbox } from "@/components/ui/checkbox"
+import { DatePickerField } from "@/components/ui/date-picker-field"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
@@ -38,10 +39,17 @@ export function CraveSubscriptionComponent() {
 
   const [customerName, setCustomerName] = useState<string | null>(null)
   const [customerAddress, setcustomerAddress] = useState<string | null>(null)
-  const [deliveryDate, setDeliveryDate] = useState<string | null>(null)
+  const [deliveryDate, setDeliveryDate] = useState<Date | null>(null)
   const [customerEmail, setCustomerEmail] = useState<string | null>(null)
   const [total, setTotal] = useState<number>(0)
   const [loading, setLoading] = useState<boolean>(false)
+
+  const today = new Date();
+  const dayOfWeek = today.getDay();  
+  const daysUntilNextMonday = (8 - dayOfWeek) % 7 || 7;
+  const nextMonday = new Date(today);
+  nextMonday.setDate(today.getDate() + daysUntilNextMonday);
+  const nextPossibleDeliveryDate = nextMonday;
 
 
   const toggleCategorySelection = (categoryId: number) => {
@@ -148,7 +156,7 @@ export function CraveSubscriptionComponent() {
     }
   }
 
-  const createCheckout = async (e: React.FormEvent<HTMLInputElement>) => {
+  const createCheckout = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
       e.preventDefault();
       setLoading(true)
 
@@ -163,6 +171,7 @@ export function CraveSubscriptionComponent() {
           customerName,
           customerAddress,
           customerEmail,
+          deliveryDate: deliveryDate?.toISOString().split('T')[0],
           items
         }),
       });
@@ -175,8 +184,12 @@ export function CraveSubscriptionComponent() {
         setLoading(false)
         //handle error
       }
+  }
 
-      
+  const onDateChange = (date: Date | null) => {
+    setDeliveryDate(date)
+    console.log(date)
+    console.log(deliveryDate)
   }
 
   return (
@@ -364,6 +377,18 @@ export function CraveSubscriptionComponent() {
                       onChange={e => setcustomerAddress(e.target.value)}
                       required
                     />
+                  </div>
+                  <div>
+                    <label htmlFor="customerDeliveryDate" className="block text-sm font-medium text-gray-700 mb-1">
+                      Delivery Date
+                    </label>
+                    <DatePickerField
+                      id="customerDeliveryDate"
+                      onDateChange={onDateChange}
+                      selectedDate={deliveryDate || null}
+                      minDate={nextPossibleDeliveryDate}
+                      placeholder="Select Delivery date"
+                    ></DatePickerField>
                   </div>
                   <div className="text-lg font-semibold">
                     Total: €{total} per week
